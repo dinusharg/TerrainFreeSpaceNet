@@ -38,6 +38,8 @@ A regression head is then applied to estimate the terrain free-space score.
   <img src="assets/terrainfreespacenet_architecture.png" width="750">
 </p>
 
+
+
 **Architecture summary:**
 - Shared MLP: `3 → 64 → 128 → 1024`
 - Symmetric aggregation: **Max pooling**
@@ -83,3 +85,24 @@ frame_id,x,y,z,free_space
 13,0.12,0.90,0.00,0.35
 .
 .
+```
+
+##  Citation
+
+If you use this code in your research, please cite the paper
+
+```bibtex
+@article{10.1007/s12555-025-0624-2,
+   author = {Gunathilaka, W. M. Dinusha and Kahandawa, Gayan and Ibrahim, M. Yousef and Hewawasam, H. S. and Nguyen, Linh},
+   title = {Agoraphilic-3D Net: A Deep Learning Method for Attractive Force Estimation in Mapless Path Planning for Unstructured Terrain},
+   journal = {International Journal of Control, Automation and Systems},
+   volume = {23},
+   number = {12},
+   pages = {3790-3802},
+   ISSN = {2005-4092},
+   DOI = {10.1007/s12555-025-0624-2},
+   url = {https://doi.org/10.1007/s12555-025-0624-2},
+   year = {2025},
+   type = {Journal Article}
+}
+```
