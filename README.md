@@ -175,7 +175,11 @@ python app.py
 
 Open the URL in CLI output and upload a point-cloud CSV and obtain the predicted free-space score.
 
+## Hugging Face Demo
 
+Interactive demo available at:
+
+https://huggingface.co/spaces/Dinusharg/TerrainFreeSpaceNet-demo
 
 ## Research Context
 
