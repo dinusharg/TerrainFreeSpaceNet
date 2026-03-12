@@ -1,0 +1,22 @@
+model:
+  input_dim: 3
+  dropout: 0.3
+
+data:
+  frame_col: frame_id
+  xyz_cols: [x, y, z]
+  label_col: free_space
+  num_points: 2048
+
+train:
+  batch_size: 16
+  epochs: 50
+  lr: 0.001
+  train_ratio: 0.8
+  seed: 42
+  num_workers: 0
+  rotate_z: false
+  jitter_std: 0.0
+
+output:
+  checkpoint_path: checkpoints/terrainfreespacenet_best.pt

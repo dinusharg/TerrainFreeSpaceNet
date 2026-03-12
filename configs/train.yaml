@@ -1,0 +1,9 @@
+train:
+  batch_size: 16
+  epochs: 100
+  lr: 0.0005
+  train_ratio: 0.8
+  seed: 42
+  num_workers: 0
+  rotate_z: true
+  jitter_std: 0.005

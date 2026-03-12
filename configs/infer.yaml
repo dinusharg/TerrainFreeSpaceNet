@@ -1,0 +1,3 @@
+infer:
+  checkpoint_path: checkpoints/terrainfreespacenet_best.pt
+  num_points: 2048
