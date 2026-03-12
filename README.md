@@ -1,78 +1,98 @@
 # TerrainFreeSpaceNet
 
-TerrainFreeSpaceNet is a PointNet-based deep learning framework for predicting
-**continuous terrain free-space (traversability) scores** directly from 3D
-point cloud data.
+**TerrainFreeSpaceNet** is a deep learning framework for predicting terrain free-space from 3D point-cloud data.
+It is designed to support terrain-aware robot navigation in uneven and unstructured environments.
 
-The network extends the original PointNet classification architecture by
-introducing a **regression head** that outputs a scalar free-space score in the
-range **[0, 1]**, enabling fine-grained assessment of navigable terrain in
-uneven and unstructured outdoor environments.
+The model learns to estimate a continuous free-space score from raw 3D point clouds, enabling robots to reason about traversable terrain regions in real time.
 
-The training pipeline is designed for **large-scale datasets** distributed
-across **multiple CSV files**, where each file may contain many point cloud
-frames identified by a `frame_id`. Data are loaded lazily at runtime to avoid
-excessive memory usage.
-
----
+This project is part of the **Agoraphilic-3D Navigation Framework**, developed for autonomous ground robots operating in complex outdoor environments.
 
 ## Overview
 
-- **Input**: 3D point clouds (e.g., LiDAR or RGB-D) stored in CSV format  
-- **Output**: Continuous free-space score ∈ [0, 1] per frame  
-- **Backbone**: PointNet (shared MLP + symmetric max pooling)  
-- **Head**: Regression network (512 → 512 → 256 → 1)  
-- **Target domain**: Mapless navigation and terrain assessment for ground robots (agoraphilic-3D) 
+Autonomous ground robots operating in natural environments must handle:
 
----
+- uneven terrain
+- vegetation
+- slopes and depressions
+- irregular obstacles
+- incomplete perception data
 
-## Model Architecture
+Traditional grid-based free-space methods struggle in these conditions.
 
-The network follows the PointNet paradigm, where each point is processed
-independently using shared multilayer perceptrons (MLPs), followed by a
-symmetric aggregation function to obtain a global feature vector.
+TerrainFreeSpaceNet addresses this by learning free-space directly from 3D point clouds using a PointNet-style neural network.
 
-A regression head is then applied to estimate the terrain free-space score.
+The system processes raw point clouds and outputs a normalized terrain free-space score representing the traversability of the observed terrain.
 
-<p align="center">
-  <img src="assets/terrainfreespacenet_architecture.png" width="750">
-</p>
+## Method Overview
+
+The TerrainFreeSpaceNet pipeline consists of the following stages:
+
+1. 3D point cloud acquisition
+2. frame-level point sampling
+3. point cloud normalization
+4. PointNet-style feature extraction
+5. global feature aggregation
+6. free-space regression
+
+## Architecture
+
+The model uses a PointNet-inspired architecture designed for unordered point sets.
+
+- Key components:
+- shared MLP layers implemented using Conv1D
+- batch normalization
+- ReLU activation
+- global max pooling
+- regression head predicting terrain free-space
 
 
 
-**Architecture summary:**
-- Shared MLP: `3 → 64 → 128 → 1024`
-- Symmetric aggregation: **Max pooling**
-- Regression head:
-  - FC(1024 → 512)
-  - FC(512 → 512)
-  - FC(512 → 256)
-  - FC(256 → 1) + Sigmoid
+### Architecture summary
+```
+  Input Point Cloud (N x 3)
+          │
+  Shared MLP Layers
+          │
+  Point Features
+          │
+  Global Max Pooling
+          │
+  Global Feature Vector
+          │
+  Fully Connected Layers
+          │
+  Free-Space Score (0–1)
+  ```
 
-The final sigmoid activation ensures the predicted free-space score lies in
-the range **[0, 1]**.
+![TerrainFreeSpaceNet Architecture](assets/terrainfreespacenet_architecture.png)
 
----
+
+
+
+## Installation
+
+Clone the repository:
+```
+git clone https://github.com/dinusharg/TerrainFreeSpaceNet.git
+cd TerrainFreeSpaceNet
+```
+
+Create a virtual environment:
+```
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Install dependencies:
+```
+pip install -r requirements.txt
+```
 
 ## Input Data Format
 
-### General structure
-- Data are stored across **one or more CSV files**
-- Each CSV may contain **multiple point cloud frames**
-- Each frame is identified by a unique `frame_id`
-- All points belonging to the same frame share the same `free_space` label
+Training data should be provided as CSV files containing point cloud frames.
 
-### Required CSV columns
-
-| Column name | Description |
-|------------|-------------|
-| `frame_id` | Integer identifier for each point cloud frame |
-| `x` | X coordinate of the point (meters) |
-| `y` | Y coordinate of the point (meters) |
-| `z` | Z coordinate of the point (meters) |
-| `free_space` | Continuous free-space score ∈ [0, 1] for the frame |
-
-### Example CSV content
+Example format:
 
 ```csv
 frame_id,x,y,z,free_space
@@ -87,7 +107,88 @@ frame_id,x,y,z,free_space
 .
 ```
 
-##  Citation
+Columns:
+
+| Column name | Description |
+|------------|-------------|
+| `frame_id` | Integer identifier for each point cloud frame |
+| `x` | X coordinate of the point (meters) |
+| `y` | Y coordinate of the point (meters) |
+| `z` | Z coordinate of the point (meters) |
+| `free_space` | Continuous free-space score ∈ [0, 1] for the frame |
+
+
+## Model Training
+
+Put the data csv files inside data folder. Change the training parameters according to the user requirments. 
+```
+python -m terrainfreespacenet.train \
+  --data_dir data \
+  --save_path checkpoints/terrainfreespacenet_best.pt \
+  --num_points 2048 \
+  --batch_size 16 \
+  --epochs 50
+```
+
+
+## Model Inference
+
+Run inference on a point cloud CSV:
+```
+python -m terrainfreespacenet.infer \
+  --input_csv examples/sample_input.csv \
+  --checkpoint checkpoints/terrainfreespacenet_best.pt
+```
+
+Example output:
+```
+{
+  "free_space_score": 0.842,
+  "num_points_used": 2048,
+  "device": "cpu"
+}
+```
+
+## Model Evaluation
+
+Evaluate model performance on validation data:
+```
+python -m terrainfreespacenet.evaluate \
+  --data_dir data \
+  --checkpoint checkpoints/terrainfreespacenet_best.pt
+```
+Evaluation metrics:
+
+- MSE
+- MAE
+- RMSE
+- R² score
+
+## Demo app
+
+Demo app can be useed as local testing interface. 
+
+Run:
+```
+python app.py
+```
+
+Open the URL in CLI output and upload a point-cloud CSV and obtain the predicted free-space score.
+
+
+
+## Research Context
+
+TerrainFreeSpaceNet was developed as part of research on:
+
+**Autonomous Robot Navigation in Uneven Terrain Using 3D Perception**
+
+The approach uses machine learning to estimate terrain traversability from raw point cloud data.
+
+
+
+## Citation
+
 
 If you use this code in your research, please cite the paper
 
@@ -106,3 +207,13 @@ If you use this code in your research, please cite the paper
    type = {Journal Article}
 }
 ```
+
+
+## License
+
+MIT License
+
+
+
+------------------
+
