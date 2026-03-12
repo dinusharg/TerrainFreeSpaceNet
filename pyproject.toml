@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "terrainfreespacenet"
+version = "0.1.0"
+description = "TerrainFreeSpaceNet: 3D point-cloud-based terrain free-space prediction"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+  { name = "Dinusha Gunathilaka" }
+]
+dependencies = [
+  "numpy",
+  "pandas",
+  "torch",
+  "pyyaml",
+  "gradio"
+]
+
+[tool.setuptools.packages.find]
+include = ["terrainfreespacenet*"]
